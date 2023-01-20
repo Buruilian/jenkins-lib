@@ -13,9 +13,32 @@ def NpmBuild() {
 }
 
 def Gobuild() {
-    sh '/usr/locla/go/bin/go build demo.go'
+    sh '/usr/local/go/bin/go build demo.go'
 }
 
 def YarnBuild() {
-    sh ‘’
+    sh '/usr/local/node/bin/yarn && /usr/local/node/bin/yarn build'
 }
+
+def CodeBuild(type) {
+    switch(type) {
+        case "maven":
+            MavenBuild()
+            break;
+        case "gradle":
+            GradelBuild()
+            break;
+        case "npm":
+            NpmBuild()
+            break;
+        case "yarn":
+            YarnBuild()
+            break;
+        default:
+            error "No such tools ... [maven/gradle/npm/yarn/go]"
+            break
+    }
+}
+
+
+
