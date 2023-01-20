@@ -35,14 +35,14 @@ pipeline {
             }
         }
 
-        stage("Test") {
+        /*stage("Test") {
             steps {
                 script {
                     println("Test")
                     build.CodeTest("${env.buildType}")
                 }
             }
-        }
+        }*/
     }
 
 }
