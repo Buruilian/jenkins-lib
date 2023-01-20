@@ -5,7 +5,7 @@ def checkout = new Checkout()
 def build = new Build()
 def unittest = new UnitTest()
 
-env.buildType = "${JOB_NAME}".split("-")[1]
+//env.buildType = "${JOB_NAME}".split("-")[1]
 
 pipeline {
     agent {
