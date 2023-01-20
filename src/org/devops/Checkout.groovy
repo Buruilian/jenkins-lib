@@ -1,7 +1,7 @@
 package org.devops
 
 //下载代码
-def GetCode(branchName, srcUrl) {
+def GetCode(srcUrl, branchName) {
     checkout(
         [
             $class: 'GitSCM', 
