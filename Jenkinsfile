@@ -1,7 +1,7 @@
 @Library("mylib@main") _
 import org.devops.*
 
-def checkout = new CheckOut()
+def checkout = new Checkout()
 def build = new Build()
 def unittest = new UnitTest()
 
