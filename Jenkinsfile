@@ -47,6 +47,9 @@ pipeline {
         }*/
 
         stage("CodeScan") {
+            when {
+		        environment name: 'skipSonar', value: 'false'
+	        }     
             steps {
                 script {
                     //代码扫描
