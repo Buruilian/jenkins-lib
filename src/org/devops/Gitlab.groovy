@@ -15,9 +15,9 @@ def GetProjectID(projectName, groupName){
     response = sh  returnStdout: true, 
         script: """ 
             curl --location --request GET \
-            http://192.168.1.200/api/v4/projects?search=${projectName} \
-            --header 'PRIVATE-TOKEN: N9mvJV4hq-z7yCcYEsC-' \
-            --header 'Authorization: Basic YWRtaW46YWRtaW4xMjM='
+            http://172.31.1.10/api/v4/projects?search=${projectName} \
+            --header 'PRIVATE-TOKEN: N-kxsLC3KMZkfX8NJiLR' \
+            --header 'Authorization: Basic cm9vdDoxMjM0NTY3OA=='
         """
     response = readJSON text: response
     if (response != []){

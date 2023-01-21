@@ -1,6 +1,6 @@
 package org.devops
 
-def CodeScan(branchName) {
+def CodeScan(branchName, commitID, projectID) {
     withCredentials([usernamePassword(credentialsId: 'f7d0c5f7-2803-4d86-9e5e-d0160f474bf0', 
                     passwordVariable: 'SONAR_PASSWORD', 
                     usernameVariable: 'SONAR_USER')]) {
@@ -8,7 +8,16 @@ def CodeScan(branchName) {
             -Dsonar.login=${SONAR_USER} \
             -Dsonar.password=${SONAR_PASSWORD} \
             -Dsonar.projectVersion=${branchName} \
-            -Dsonar.branch.name=${branchName}
+            -Dsonar.branch.name=${branchName} \
+            -Dsonar.gitlab.commit_sha=${commitID} \
+            -Dsonar.gitlab.ref_name=${branchName} \
+            -Dsonar.gitlab.project_id=${projectID} \
+            -Dsonar.dynamicAnalysis=reuseReports \
+            -Dsonar.gitlab.failure_notification_mode=commit-status \
+            -Dsonar.gitlab.url=http://172.31.1.10 \
+            -Dsonar.gitlab.user_token=N-kxsLC3KMZkfX8NJiLR \
+            -Dsonar.gitlab.api_version=v4
+
            """
        }
 }

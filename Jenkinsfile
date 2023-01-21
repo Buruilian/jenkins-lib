@@ -5,6 +5,7 @@ def checkout = new Checkout()
 def build = new Build()
 def unittest = new UnitTest()
 def sonar = new Sonar()
+def gitcli = new Gitlab()
 
 //env.buildType = "${JOB_NAME}".split("-")[1]
 
@@ -48,10 +49,16 @@ pipeline {
         stage("CodeScan") {
             steps {
                 script {
+                    //代码扫描
                     println("Code Scan")
-                    profileName= "${JOB_NAME}".split("-")[0]
+                    profileName = "${JOB_NAME}".split("-")[0]
                     sonar.Init("${JOB_NAME}", "java", profileName )
-                    sonar.CodeScan("${env.branchName}")
+                    //commit-status
+                    commitID = gitcli.GetCommitID()
+                    groupName = profileName
+                    projectID = gitcli.GetProjectID("${JOB_NAME}", groupName)
+
+                    sonar.CodeScan("${env.branchName}", commitID, projectID)   
                 }
             }
         }
