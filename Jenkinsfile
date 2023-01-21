@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     println("Code Scan")
-                    sonar.CodeScan("${env.branchName"})
+                    sonar.CodeScan("${env.branchName}")
                 }
             }
         }
