@@ -48,7 +48,8 @@ pipeline {
         stage("CodeScan") {
             steps {
                 script {
-                    sonar.CodeScan(${env.branchName})
+                    println("Code Scan")
+                    sonar.CodeScan("${env.branchName"})
                 }
             }
         }
