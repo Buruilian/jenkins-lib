@@ -7,7 +7,8 @@ def CodeScan(branchName) {
         sh """/usr/local/sonar-scanner/bin/sonar-scanner \
             -Dsonar.login=${SONAR_USER} \
             -Dsonar.password=${SONAR_PASSWORD} \
-            -Dsonar.projectVersion=${branchName}
+            -Dsonar.projectVersion=${branchName} \
+            -Dsonar.branch.name=${branchName}
            """
        }
 }
