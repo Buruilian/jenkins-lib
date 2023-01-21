@@ -49,6 +49,8 @@ pipeline {
             steps {
                 script {
                     println("Code Scan")
+                    profileName= "${JOB_NAME}".split("-")[0]
+                    sonar.Init("${JOB_NAME}", "java", profileName )
                     sonar.CodeScan("${env.branchName}")
                 }
             }
