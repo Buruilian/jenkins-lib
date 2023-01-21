@@ -43,6 +43,14 @@ pipeline {
                 }
             }
         }*/
-    }
 
+        stage("CodeScan") {
+            steps {
+                script {
+                    println("Code Scan")
+                    sh '/usr/local/sonar-scanner/bin/sonar-scanner'
+                }
+            }
+        }
+    }
 }
