@@ -1,5 +1,18 @@
 package org.devops
 
+def PushArtifact(targetDir, filePath){
+    // 上传制品
+    sh """
+        curl -X POST "http://172.31.1.10:8081/service/rest/v1/components?repository=devops4-local" \
+        -H "accept: application/json" \
+        -H "Content-Type: multipart/form-data" \
+        -F "raw.directory=${targetDir}" \
+        -F "raw.asset1=@${filePath};type=application/java-archive" \
+        -F "raw.asset1.filename=${newFileName}" \
+        -u admin:123456
+    """
+}
+
 // 通过nexus插件上传
 def PushArtifactByNexusPlugin(artifactId, file, type, groupId, repoName, version){
     println(artifactId)
