@@ -1,5 +1,6 @@
 package org.devops
 
+// 通过nexus插件上传
 def PushArtifactByNexusPlugin(artifactId, file, type, groupId, repoName, version){
     println(artifactId)
     println("${file}, ${type}, ${groupId}, ${repoName}, ${version}")
@@ -16,6 +17,7 @@ def PushArtifactByNexusPlugin(artifactId, file, type, groupId, repoName, version
                         version: version    
 }
 
+// 通过maven命令上传
 def PushArtifactByMavenCLI(artifactId, file, type, groupId, repoName, version){
     sh """
         mvn deploy:deploy-file \
