@@ -6,6 +6,7 @@ def build = new Build()
 def unittest = new UnitTest()
 def sonar = new Sonar()
 def gitcli = new Gitlab()
+def artifact = new Artifact()
 
 //env.buildType = "${JOB_NAME}".split("-")[1]
 
@@ -24,6 +25,16 @@ pipeline {
                 script {
                     println("GetCode")
                     checkout.GetCode("${env.srcUrl}", "${env.branchName}")
+
+                    env.buName = "${JOB_NAME}".split("-")[0]
+                    env.serviceName = "${JOB_NAME}".split("_")[0]
+                    env.commitID = gitcli.GetCommitID()
+
+                    currentBuild.description = """
+                    srcUrl: ${env.srcUrl} \n
+                    branchName: ${env.branchName} \n
+                    """
+                    currentBuild.displayName = "${env.commitId}"
                 }
             }
         }
@@ -55,15 +66,34 @@ pipeline {
                     //代码扫描
                     println("Code Scan")
                     profileName = "${JOB_NAME}".split("-")[0]
-                    sonar.Init("${JOB_NAME}", "java", profileName )
-                    //commit-status
-                    commitID = gitcli.GetCommitID()
-                    groupName = profileName
-                    projectID = gitcli.GetProjectID("${JOB_NAME}", groupName)
+                    sonar.Init("${env.serviceName}", "java", profileName )
 
-                    sonar.CodeScan("${env.branchName}", commitID, projectID)   
+                    //commit-status
+                    groupName = profileName
+                    projectID = gitcli.GetProjectID("${env.serviceName}", groupName)
+                    sonar.CodeScan("${env.branchName}", env.commitID, projectID)   
+                }
+            }
+        }
+
+        stage("PushArtifact"){
+            steps{
+                script{
+                    // Dir /buName/serviceName/version/serviceName-version.xxx
+                    version = "${env.branchName}-${env.commitID}"
+
+                    // 重命名制品
+                    JarName = sh returnStdout: true, script: """ls target|grep -E "jar\$" """
+                    fileName = JarName -"\n"
+                    fileType = fileName.split('\\.')[-1]
+                    newFileName = "${serviceName}-${version}.${fileType}"
+                    sh "cd target; mv ${fileName} ${newFileName}"
+
+                    // 上传制品
+                    artifact.PushArtifact("${env.buName}/${env.serviceName}/${version}", "target", "${newFileName}")
                 }
             }
         }
     }
 }
+
