@@ -3,7 +3,8 @@ package org.devops
 //获取CommitID
 def GetCommitID(){
     ID = sh returnStdout: true, script:"git rev-parse HEAD"
-    return ID -"\n"
+    ID = ID - "\n"
+    return ID[0..7]
 }
 
 //获取ProjectID
