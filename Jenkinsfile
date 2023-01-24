@@ -115,7 +115,6 @@ pipeline {
                         sleep 2
                         docker rmi 172.31.1.11/${imageName}:${imageTag}
                     """
-                        }
                     }
                 }
             }
