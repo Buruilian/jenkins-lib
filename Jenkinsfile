@@ -95,10 +95,9 @@ pipeline {
             }
         }
 
-        stages {
-            stage("DockerBuild"){
-                steps{
-                    script{
+        stage("DockerBuild"){
+            steps {
+                script{
                     imageName = "${env.buName}/${env.serviceName}"
                     imageTag = "${env.branchName}-${env.commitID}"
                     sh """
@@ -115,9 +114,8 @@ pipeline {
                         sleep 2
                         docker rmi 172.31.1.11/${imageName}:${imageTag}
                     """
-                    }
-                }
-            }
+                }                    
+           }    
         }
     }
 }
