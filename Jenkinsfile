@@ -94,6 +94,32 @@ pipeline {
                 }
             }
         }
+
+        stages {
+            stage("DockerBuild"){
+                steps{
+                    script{
+                    imageName = "${env.buName}/${env.serviceName}"
+                    imageTag = "${env.branchName}-${env.commitID}"
+                    sh """
+                        #登录镜像仓库
+                        docker login -u admin -p 123456 172.31.1.11
+
+                        # 构建镜像
+                        docker build -t 172.31.1.11/${imageName}:${imageTag} .
+
+                        # 上传镜像
+                        docker push 172.31.1.11/${imageName}:${imageTag}
+
+                        # 删除镜像
+                        sleep 2
+                        docker rmi 172.31.1.11/${imageName}:${imageTag}
+                    """
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
