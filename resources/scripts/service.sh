@@ -9,7 +9,7 @@ start(){
     if [[ $proc_result == "false" ]];then
       nohup java -jar -Dserver.port=${PORT} ${APP_NAME}-${VERSION}.jar >${APP_NAME}.log  2>&1 &
     else
-      "echo skip start"
+      echo "skip start"
     fi
 }
  
@@ -33,19 +33,19 @@ check(){
 case $4 in
   start)
     start
-    sleep 10s
+    sleep 5s
     check
     ;;
   stop)
     stop
-    sleep 10s
+    sleep 5s
     check
     ;;
   restart)
     stop
-    sleep 10s
+    sleep 5s
     start
-    sleep 10s
+    sleep 5s
     check
     ;;
   check)
