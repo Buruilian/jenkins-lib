@@ -52,6 +52,8 @@ pipeline {
                         # 复制app
                         ansible "${env.deployHosts}" -m copy -a "src=${env.pkgName} dest=${env.targetDir}/${env.projectName}/${env.pkgName}"
                     """
+                    fileData = libraryResource 'scripts/service.sh'
+                    println（fileData）
                 }
             }
         }
