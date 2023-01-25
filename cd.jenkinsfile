@@ -23,8 +23,10 @@ pipeline {
                 script {
                     projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
                     commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
-                    path = "${env.buName}/${env.serviceName}/${env.branchName}-${commitID}"
-                    env.pkgName = "${env.serviceName}-${env.branchName}-${commitID}.jar"
+
+                    env.releaseVersion = "${env.branchName}-${commitID}"
+                    path = "${env.buName}/${env.serviceName}/${env.releaseVersion}"
+                    env.pkgName = "${env.serviceName}-${env.releaseVersion}.jar"
                     artifact.PullArtifact(path, pkgName)
                 }
             }
@@ -57,6 +59,18 @@ pipeline {
 
                     writeFile file: 'service.sh', text: fileData
                     sh "ls -a; cat service.sh"
+
+                    sh """
+                    # 复制脚本
+                    ansible "${env.deployHosts}" -m copy -a "src=service.sh dest=${env.targetDir}/${env.projectName}/service.sh"
+
+                    # 启动服务
+                    ansible "${env.deployHosts}" -m shell -a "cd ${env.targetDir}/${env.projectName} && sh service.sh ${env.projectName} ${env.releaseVersion} ${env.port} start" -u root
+
+                    # 检查服务
+                    sleep 10
+                    ansible "${env.deployHosts}" -m shell -a "cd ${env.targetDir}/${env.projectName} && sh service.sh ${env.projectName} ${env.releaseVersion} ${env.port} check" -u root
+                    """
                 }
             }
         }
