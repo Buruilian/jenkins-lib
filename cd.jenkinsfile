@@ -54,7 +54,9 @@ pipeline {
                     """
 
                     fileData = libraryResource 'scripts/service.sh'
-                    println(fileData)
+
+                    writeFile file: 'service.sh', text: fileData
+                    sh "ls -a; cat service.sh"
                 }
             }
         }
