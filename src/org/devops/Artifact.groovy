@@ -1,5 +1,16 @@
 package org.devops
 
+// 下载制品
+def PullArtifact(path, pkgName){
+    // path = devops4/devops4-maven-service/RELEASE-1.1.1-ed2655c4
+    // pkgName = devops4-maven-service-RELEASE-1.1.1-ed2655c4.jar
+    sh """
+        curl http://172.31.1.10:8081/repository/devops4-local/${path}/${pkgName} \
+        -u admin:123456 \
+        -o ${pkgName} -s
+    """
+}
+
 def PushArtifact(targetDir, filePath, fileName){
     // 上传制品
     sh """

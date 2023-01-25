@@ -1,4 +1,12 @@
+@Library("mylib@main") _
+import org.devops.*
+
+def gitcli = new Gitlab()
+def artifact = new Artifact()
+
 env.projectName = "${JOB_NAME}".split("_")[0]
+env.buName = "${JOB_NAME}".split("-")[0]
+env.serviceName = "${JOB_NAME}".split("_")[0]
 
 pipeline {
     agent {
@@ -9,15 +17,11 @@ pipeline {
         stage("PullArtifact"){
             steps {
                 script {
-                    env.buName = "${JOB_NAME}".split("-")[0]
-                    env.serviceName = "${JOB_NAME}".split("_")[0]
-                    projectID = GetProjectID("${env.serviceName}", "${env.buName}")
-
-                    commitID = GetBranchCommitID(projectID, "${env.branchName}")
-
+                    projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
+                    commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
                     path = "${env.buName}/${env.serviceName}/${env.branchName}-${commitID}"
                     env.pkgName = "${env.serviceName}-${env.branchName}-${commitID}.jar"
-                    PullArtifact(path, pkgName)
+                    artifact.PullArtifact(path, pkgName)
                 }
             }
         }
@@ -54,13 +58,4 @@ pipeline {
 
 
 
-def PullArtifact(path, pkgName){
-    // path = devops4/devops4-maven-service/RELEASE-1.1.1-ed2655c4
-    // pkgName = devops4-maven-service-RELEASE-1.1.1-ed2655c4.jar
-    sh """
-        curl http://172.31.1.10:8081/repository/devops4-local/${path}/${pkgName} \
-        -u admin:123456 \
-        -o ${pkgName} -s
-    """
-}
 
