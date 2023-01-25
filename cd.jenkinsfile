@@ -1,0 +1,66 @@
+env.projectName = "${JOB_NAME}".split("_")[0]
+
+pipeline {
+    agent {
+        label "build"
+    }
+
+    stages {
+        stage("PullArtifact"){
+            steps {
+                script {
+                    env.buName = "${JOB_NAME}".split("-")[0]
+                    env.serviceName = "${JOB_NAME}".split("_")[0]
+                    projectID = GetProjectID("${env.serviceName}", "${env.buName}")
+
+                    commitID = GetBranchCommitID(projectID, "${env.branchName}")
+
+                    path = "${env.buName}/${env.serviceName}/${env.branchName}-${commitID}"
+                    env.pkgName = "${env.serviceName}-${env.branchName}-${commitID}.jar"
+                    PullArtifact(path, pkgName)
+                }
+            }
+        }
+
+        stage("AnsibleDeploy"){
+            steps {
+                script {
+                    println("deploy ${env.envList}")
+                    //将主机写入清单文件
+                    sh "rm -f hosts"
+                    for (host in "${env.deployHosts}".split(",")) {
+                        sh "echo ${host} >> hosts"
+                    }
+                    sh "cat hosts"
+
+                    // ansible发布
+                    sh """
+                        # 主机连通性检测
+                        ansible "${env.deployHosts}" -m ping -i hosts
+
+                        # 清理和创建发布目录
+                        ansible "${env.deployHosts}" -m shell -a "rm -rf ${env.targetDir}/${env.projectName}/* && mkdir -p ${env.targetDir}/${env.projectName} || echo file is exists"
+
+                        # 复制app
+                        ansible "${env.deployHosts}" -m copy -a "src=${env.pkgName} dest=${env.targetDir}/${env.projectName}/${env.pkgName}"
+                    """
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+def PullArtifact(path, pkgName){
+    // path = devops4/devops4-maven-service/RELEASE-1.1.1-ed2655c4
+    // pkgName = devops4-maven-service-RELEASE-1.1.1-ed2655c4.jar
+    sh """
+        curl http://172.31.1.10:8081/repository/devops4-local/${path}/${pkgName} \
+        -u admin:123456 \
+        -o ${pkgName} -s
+    """
+}
+
