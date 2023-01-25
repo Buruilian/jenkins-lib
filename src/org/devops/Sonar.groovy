@@ -67,6 +67,7 @@ def CreateProject(projectName){
 def ProjectSearch(projectName){
     apiUrl = "projects/search?projects=${projectName}"
     response = SonarRequest(apiUrl,"GET")
+    println(response)
 
     if (response.paging.total == 0){
         println("Project not found!.....")
