@@ -65,7 +65,7 @@ pipeline {
                     ansible "${env.deployHosts}" -m copy -a "src=service.sh dest=${env.targetDir}/${env.projectName}/service.sh"
 
                     # 启动服务
-                    ansible "${env.deployHosts}" -m shell -a "cd ${env.targetDir}/${env.projectName} && sh service.sh ${env.projectName} ${env.releaseVersion} ${env.port} start" -u root
+                    ansible "${env.deployHosts}" -m shell -a "cd ${env.targetDir}/${env.projectName} && sh service.sh ${env.projectName} ${env.releaseVersion} ${env.port} restart" -u root
 
                     # 检查服务
                     sleep 10
