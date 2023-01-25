@@ -15,7 +15,7 @@ def CodeScan(branchName, commitID, projectID) {
             -Dsonar.dynamicAnalysis=reuseReports \
             -Dsonar.gitlab.failure_notification_mode=commit-status \
             -Dsonar.gitlab.url=http://172.31.1.10 \
-            -Dsonar.gitlab.user_token=N-kxsLC3KMZkfX8NJiLR \
+            -Dsonar.gitlab.user_token=j53sXHNtGH3s7GGsT-CD \
             -Dsonar.gitlab.api_version=v4
 
            """
