@@ -3,6 +3,7 @@ import org.devops.*
 
 def gitcli = new Gitlab()
 def artifact = new Artifact()
+def deploy = new Deploy()
 
 env.projectName = "${JOB_NAME}".split("_")[0]
 env.buName = "${JOB_NAME}".split("-")[0]
@@ -35,7 +36,7 @@ pipeline {
         stage("AnsibleDeploy"){
             steps {
                 script {
-                    
+                   deploy.AnsibleDeploy() 
                 }
             }
         }
