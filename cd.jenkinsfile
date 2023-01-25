@@ -12,6 +12,10 @@ pipeline {
     agent {
         label "build"
     }
+    
+    options {
+        skipDefaultCheckout true
+    }
 
     stages {
         stage("PullArtifact"){
