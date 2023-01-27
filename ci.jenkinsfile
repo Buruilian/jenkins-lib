@@ -127,7 +127,23 @@ pipeline {
 				script {
 					// 下载模板文件
 					projectId = "15"
-					gitcli.GetRepoFile(projectId, "deployments.yaml", "main")
+					fileData = gitcli.GetRepoFile(projectId, "deployments.yaml", "main")
+					println(fileData)
+
+					sh "rm -f deployments.yaml"
+					writeFile file: 'deployments.yaml', text: fileData
+
+					// 替换模板文件内容
+					namespace = "${env.buName}"
+					appName = "${env.serviceName}"
+					sh """
+						sed -i 's#__DOMAIN_NAME#${env.domainName}#g' deployments.yaml
+						sed -i 's#__SERVICE_PORT__#${env.port}#g' deployments.yaml
+						sed -i 's#__APP_NAME__#${appName}#g' deployments.yaml
+						sed -i 's#__NAMESPACE__#${namespace}#g' deployments.yaml
+						sed -i 's#__IMAGE_NAME__#${env.imageName}#g' deployments.yaml
+						cat deployments.yaml
+					"""
 				}
 			}
 		}
