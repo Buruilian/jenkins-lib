@@ -1,4 +1,4 @@
-@Library("mylib@main") _
+@Library("mylib@feature-k8s") _
 import org.devops.*
 
 def checkout = new Checkout()
@@ -86,7 +86,7 @@ pipeline {
                     JarName = sh returnStdout: true, script: """ls target|grep -E "jar\$" """
                     fileName = JarName -"\n"
                     fileType = fileName.split('\\.')[-1]
-                    newFileName = "${serviceName}-${version}.${fileType}"
+                    env.newFileName = "${serviceName}-${version}.${fileType}"
                     sh "cd target; mv ${fileName} ${newFileName}"
 
                     // 上传制品
@@ -98,22 +98,26 @@ pipeline {
         stage("DockerBuild"){
             steps {
                 script{
-                    imageName = "${env.buName}/${env.serviceName}"
-                    imageTag = "${env.branchName}-${env.commitID}"
-                    sh """
-                        #登录镜像仓库
-                        docker login -u admin -p 123456 172.31.0.11
+                	env.registry = "172.31.0.11"
+                	env.version = "${env.branchName}-${env.commitID}"
+                    env.imageName = "${env.registry}/${env.buName}/${env.serviceName}:${env.version}"
 
-                        # 构建镜像
-                        docker build -t 172.31.0.11/${imageName}:${imageTag} .
+                    withCredentials([usernamePassword(credentialsId: '0afc6b42-b63f-4fb5-8b43-ad9ad77e9ec6', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
+	    				sh """
+	                        # 登录镜像仓库
+	                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${env.registry}
 
-                        # 上传镜像
-                        docker push 172.31.0.11/${imageName}:${imageTag}
+	                        # 构建镜像
+	                        docker build -t ${env.imageName} . --build-arg pkgname=target/${env.newFileName}
 
-                        # 删除镜像
-                        sleep 2
-                        docker rmi 172.31.0.11/${imageName}:${imageTag}
-                    """
+	                        # 上传镜像
+	                        docker push ${env.imageName}
+
+	                        # 删除镜像
+	                        sleep 2
+	                        docker rmi ${env.imageName}
+	                    """
+					}
                 }                    
            }    
         }
