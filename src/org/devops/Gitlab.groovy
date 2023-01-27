@@ -45,6 +45,7 @@ def HttpReq(method, apiUrl) {
         http://172.31.0.10/api/v4${apiUrl} \
         --header 'PRIVATE-TOKEN: j53sXHNtGH3s7GGsT-CD'
     """
+    println(response.class)
     return response
 }
 
