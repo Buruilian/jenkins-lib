@@ -26,7 +26,7 @@ def GetProjectID(projectName, groupName){
         script: """ 
             curl --location --request GET \
             http://172.31.0.10/api/v4/projects?search=${projectName} \
-            --header 'PRIVATE-TOKEN: j53sXHNtGH3s7GGsT-CD' \
+            --header 'Authorization: Bearer j53sXHNtGH3s7GGsT-CD' \
         """
     response = readJSON text: response
     if (response != []){
@@ -43,7 +43,7 @@ def HttpReq(method, apiUrl) {
     script: """ 
         curl --location --request ${method} \
         http://172.31.0.10/api/v4${apiUrl} \
-        --header 'PRIVATE-TOKEN: j53sXHNtGH3s7GGsT-CD' \
+        --header 'Authorization: Bearer j53sXHNtGH3s7GGsT-CD' \
     """
     return response
 }
