@@ -4,6 +4,7 @@ package org.devops
 def GetRepoFile(projectId, filePath, branchName) {
 	//GET /projects/:id/repository/files/:file_path/raw
 	apiUrl = "/projects/${projectId}/repository/files/${filePath}/raw?ref=${branchName}"
+    println(apiUrl)
 	response = HttpReq('GET', apiUrl)
 	return response.content
 }
