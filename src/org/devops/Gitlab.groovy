@@ -24,6 +24,14 @@ def CreateRepoFile(projectId, filePath, fileContent, branchName) {
     println(response)
 }
 
+//更新文件内容
+def UpdateRepoFile(projectId, filePath, fileContent, branchName){
+    apiUrl = "projects/${projectId}/repository/files/${filePath}"
+    reqBody = """{"branch": "${branchName}","encoding":"base64", "content": "${fileContent}", "commit_message": "update a new file"}"""
+    response = HttpReqByHttpRequest('PUT', apiUrl, reqBody)
+    println(response)
+}
+
 //获取文件内容
 def GetRepoFile(projectId, filePath, branchName) {
 	//GET /projects/:id/repository/files/:file_path/raw
