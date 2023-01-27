@@ -126,7 +126,7 @@ pipeline {
 			steps {
 				script {
 					// 下载模板文件
-					projectId = 15
+					projectId = "15"
 					gitcli.GetRepoFile(projectId, "deployments.yaml", "main")
 				}
 			}
