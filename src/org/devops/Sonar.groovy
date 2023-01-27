@@ -14,7 +14,7 @@ def CodeScan(branchName, commitID, projectID) {
             -Dsonar.gitlab.project_id=${projectID} \
             -Dsonar.dynamicAnalysis=reuseReports \
             -Dsonar.gitlab.failure_notification_mode=commit-status \
-            -Dsonar.gitlab.url=http://172.31.1.10 \
+            -Dsonar.gitlab.url=http://172.31.0.10 \
             -Dsonar.gitlab.user_token=j53sXHNtGH3s7GGsT-CD \
             -Dsonar.gitlab.api_version=v4
 
@@ -78,7 +78,7 @@ def ProjectSearch(projectName){
 
 def SonarRequest(apiUrl,method){
     withCredentials([string(credentialsId: "ea4a8bbd-ee0e-47b5-88dd-25f8572e3b15", variable: 'SONAR_TOKEN')]) {
-        sonarApi = "http://172.31.1.10:9000/api"
+        sonarApi = "http://172.31.0.10:9000/api"
         response = sh  returnStdout: true, 
             script: """
             curl --location \

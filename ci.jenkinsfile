@@ -102,17 +102,17 @@ pipeline {
                     imageTag = "${env.branchName}-${env.commitID}"
                     sh """
                         #登录镜像仓库
-                        docker login -u admin -p 123456 172.31.1.11
+                        docker login -u admin -p 123456 172.31.0.11
 
                         # 构建镜像
-                        docker build -t 172.31.1.11/${imageName}:${imageTag} .
+                        docker build -t 172.31.0.11/${imageName}:${imageTag} .
 
                         # 上传镜像
-                        docker push 172.31.1.11/${imageName}:${imageTag}
+                        docker push 172.31.0.11/${imageName}:${imageTag}
 
                         # 删除镜像
                         sleep 2
-                        docker rmi 172.31.1.11/${imageName}:${imageTag}
+                        docker rmi 172.31.0.11/${imageName}:${imageTag}
                     """
                 }                    
            }    

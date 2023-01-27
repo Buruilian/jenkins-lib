@@ -5,7 +5,7 @@ def PullArtifact(path, pkgName){
     // path = devops4/devops4-maven-service/RELEASE-1.1.1-ed2655c4
     // pkgName = devops4-maven-service-RELEASE-1.1.1-ed2655c4.jar
     sh """
-        curl http://172.31.1.10:8081/repository/devops4-local/${path}/${pkgName} \
+        curl http://172.31.0.10:8081/repository/devops4-local/${path}/${pkgName} \
         -u admin:123456 \
         -o ${pkgName} -s
     """
@@ -14,7 +14,7 @@ def PullArtifact(path, pkgName){
 def PushArtifact(targetDir, filePath, fileName){
     // 上传制品
     sh """
-        curl -X POST "http://172.31.1.10:8081/service/rest/v1/components?repository=devops4-local" \
+        curl -X POST "http://172.31.0.10:8081/service/rest/v1/components?repository=devops4-local" \
         -H "accept: application/json" \
         -H "Content-Type: multipart/form-data" \
         -F "raw.directory=${targetDir}" \
@@ -34,7 +34,7 @@ def PushArtifactByNexusPlugin(artifactId, file, type, groupId, repoName, version
                                     type: type]], 
                         credentialsId: '6642b556-2779-43f8-9336-fbea2a0caaec', 
                         groupId: groupId, 
-                        nexusUrl: '172.31.1.10:8081', 
+                        nexusUrl: '172.31.0.10:8081', 
                         nexusVersion: 'nexus3', 
                         protocol: 'http', 
                         repository: repoName, 
@@ -50,7 +50,7 @@ def PushArtifactByMavenCLI(artifactId, file, type, groupId, repoName, version){
         -Dversion=${version} \
         -Dpackaging=${type}  \
         -Dfile=${file} \
-        -Durl=http://172.31.1.10:8081/repository/${repoName}/  \
+        -Durl=http://172.31.0.10:8081/repository/${repoName}/  \
         -DrepositoryId=mymaven
     """
 }
@@ -61,7 +61,7 @@ def PushArtifactByMavenPom(repoName, file){
         mvn deploy:deploy-file \
         -DgeneratePom=true \
         -DrepositoryId=mymaven \
-        -Durl=http://172.31.1.10:8081/repository/${repoName}/ \
+        -Durl=http://172.31.0.10:8081/repository/${repoName}/ \
         -DpomFile=pom.xml \
         -Dfile=${file}
     """
