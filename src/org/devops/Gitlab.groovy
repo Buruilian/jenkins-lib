@@ -38,7 +38,7 @@ def GetProjectID(projectName, groupName){
     }
 }
 
-def HttpReq(method, apiUrl){
+def HttpReq(method, apiUrl) {
     response = sh  returnStdout: true, 
     script: """ 
         curl --location --request ${method} \
