@@ -5,7 +5,7 @@ def GetRepoFile(projectId, filePath, branchName) {
 	//GET /projects/:id/repository/files/:file_path/raw
 	apiUrl = "/projects/${projectId}/repository/files/${filePath}/raw?ref=${branchName}"
 	response = HttpReq('GET', apiUrl)
-	return response.content
+	return response
 }
 
 //获取CommitID
@@ -45,7 +45,6 @@ def HttpReq(method, apiUrl) {
         http://172.31.0.10/api/v4${apiUrl} \
         --header 'PRIVATE-TOKEN: j53sXHNtGH3s7GGsT-CD'
     """
-    println(response.class)
     return response
 }
 
