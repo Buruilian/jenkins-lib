@@ -121,6 +121,15 @@ pipeline {
                 }                    
            }    
         }
+
+        stage("ReleaseFile") {
+			steps {
+				script {
+					// 下载模板文件
+					projectId = 16
+					gitcli.GetRepoFile(projectId, "deployments.yaml", "main")
+				}
+			}
+		}
     }
 }
-
