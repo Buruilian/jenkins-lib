@@ -137,7 +137,7 @@ pipeline {
 					namespace = "${env.buName}"
 					appName = "${env.serviceName}"
 					sh """
-						sed -i 's#__DOMAIN_NAME#${env.domainName}#g' deployments.yaml
+						sed -i 's#__DOMAIN_NAME__#${env.domainName}#g' deployments.yaml
 						sed -i 's#__SERVICE_PORT__#${env.port}#g' deployments.yaml
 						sed -i 's#__APP_NAME__#${appName}#g' deployments.yaml
 						sed -i 's#__NAMESPACE__#${namespace}#g' deployments.yaml
