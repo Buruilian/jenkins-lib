@@ -4,7 +4,6 @@ package org.devops
 def GetRepoFile(projectId, filePath, branchName) {
 	//GET /projects/:id/repository/files/:file_path/raw
 	apiUrl = "/projects/${projectId}/repository/files/${filePath}/raw?ref=${branchName}"
-    println(apiUrl)
 	response = HttpReq('GET', apiUrl)
 	return response.content
 }
@@ -43,7 +42,7 @@ def HttpReq(method, apiUrl){
     response = sh  returnStdout: true, 
     script: """ 
         curl --location --request ${method} \
-        http://172.31.0.10/api/v4/${apiUrl} \
+        http://172.31.0.10/api/v4${apiUrl} \
         --header 'PRIVATE-TOKEN: j53sXHNtGH3s7GGsT-CD' \
     """
     return response
