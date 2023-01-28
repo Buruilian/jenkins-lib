@@ -126,7 +126,7 @@ pipeline {
 			steps {
 				script {
                         projectId = 17
-                        fileData = GetRepoFile(projectId,"values.yaml", "main" )
+                        fileData = gitcli.GetRepoFile(projectId,"values.yaml", "main" )
                         //println(fileData)
  
                         yamlData = readYaml text: fileData  
