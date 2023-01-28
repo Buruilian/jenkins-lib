@@ -39,30 +39,28 @@ pipeline {
 
         stage("HelmDeploy"){
             steps{
-                container("helm"){
-                    script{
-                        env.namespace = "${env.buName}"
-                        env.appName = "${env.serviceName}"
-                        currentBuild.description = "NS: ${env.namespace}"
+                script{
+                    env.namespace = "${env.buName}"
+                    env.appName = "${env.serviceName}"
+                    currentBuild.description = "NS: ${env.namespace}"
                       
-                        //Helm 发布
-                        sh """
-                            helm package "${env.appName}/" 
-                            helm upgrade --install --create-namespace  "${env.appName}" ./"${env.appName}"-*.tgz -n ${env.namespace} 
-                            helm history "${env.appName}"  -n ${env.namespace} 
-                        """ 
+                    //Helm 发布
+                    sh """
+                        helm package "${env.appName}/" 
+                        helm upgrade --install --create-namespace  "${env.appName}" ./"${env.appName}"-*.tgz -n ${env.namespace} 
+                        helm history "${env.appName}"  -n ${env.namespace} 
+                    """ 
  
-                        //获取release的历史版本   
-                        env.revision = sh returnStdout: true, script: """helm history ${env.appName} -n ${env.namespace}  | grep -v 'REVISION' | awk '{print \$1}' """
-                        println("${env.revision}")
-                        println("${env.revision.split('\n').toString()}")
-                        env.REVISION = "${env.revision.split('\n').toString()}"
-                        println("${env.REVISION}")
+                    //获取release的历史版本   
+                    env.revision = sh returnStdout: true, script: """helm history ${env.appName} -n ${env.namespace}  | grep -v 'REVISION' | awk '{print \$1}' """
+                    println("${env.revision}")
+                    println("${env.revision.split('\n').toString()}")
+                    env.REVISION = "${env.revision.split('\n').toString()}"
+                    println("${env.REVISION}")
  
-                        // 获取应用状态
-                        5.times{
-                            sh "sleep 2; kubectl -n ${env.namespace} get pod  | grep ${env.appName}"
-                        }
+                    // 获取应用状态
+                    5.times{
+                        sh "sleep 2; kubectl -n ${env.namespace} get pod  | grep ${env.appName}"
                     }
                 }
             }
