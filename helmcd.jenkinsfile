@@ -76,5 +76,36 @@ pipeline {
                 }
             }
         }
+
+        stage("RollOut"){
+            input {
+                message "是否进行回滚"
+                ok "提交"
+                submitter "zeyang,aa"
+                parameters {
+                    choice(choices: ['yes', 'no'], name: 'opts')
+                }
+            }
+ 
+            steps{
+ 
+                container("helm"){
+                    script{
+                        switch("${opts}") {
+                            case "yes":
+                                def result = input  message: "选择回滚版本?", 
+                                parameters: [choice(choices: env.REVISION, name: 'rversion')]
+ 
+                                println("${result}")
+                                sh "helm rollback ${env.appName} ${result} -n ${env.namespace} "
+                                break
+ 
+                            case "no":
+                            break
+                        }
+                    }
+                }
+            }
+        }
 	}
 }
