@@ -1,8 +1,7 @@
-@Library("mylib@main") _
-import org.devops.*
+@Library("mylib"@feature-k8s) _   //加载共享库
+import org.devops.*               // 导入库
 
 def gitcli = new Gitlab()
-def artifact = new Artifact()
 def deploy = new Deploy()
 
 env.projectName = "${JOB_NAME}".split("_")[0]
@@ -10,41 +9,62 @@ env.buName = "${JOB_NAME}".split("-")[0]
 env.serviceName = "${JOB_NAME}".split("_")[0]
 
 pipeline {
-    agent {
-        label "build"
-    }
-    
-    options {
-        skipDefaultCheckout true
-    }
+	agent {
+		label "build"
+	}
 
-    stages {
-        stage("PullArtifact"){
-            steps {
-                script {
-                    projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
-                    commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
+	options {
+		skipDefaultCheckout true
+	}
 
-                    env.releaseVersion = "${env.branchName}-${commitID}"
-                    path = "${env.buName}/${env.serviceName}/${env.releaseVersion}"
-                    env.pkgName = "${env.serviceName}-${env.releaseVersion}.jar"
-                    artifact.PullArtifact(path, pkgName)
-                }
-            }
-        }
+	stages {
+		stage("GetDeployFile") {
+			script {
+				projectId = 15
+				appName = "${env.serviceName}"
 
-        stage("AnsibleDeploy"){
-            steps {
-                script {
-                   deploy.AnsibleDeploy() 
-                }
-            }
-        }
-    }
+				//获取devops4-ops-service
+				projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
+				commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
+
+				//下载devops4-k8s-deployment中的部署文件
+				env.version = "${env.branchName}-${commitID}"
+				env.deployFile = "${env.version}.yaml"
+				fileData = gitcli.GetRepoFile(projectId, "${appName}%2f${env.version}.yaml")
+				sh "rm -f ${env.deployFile}"
+				writeFile file: "${env.deployFile}", text: fileData
+			}
+		}
+	}
+
+	stage("K8sDeploy") {
+		steps {
+			script {
+				env.namespace = "${env.buName}"
+				currentBuild.description = "NS: ${env.namespace}"
+
+				sh """
+					## 发布应用
+					kubectl apply -f ${env.deployFile} -n ${env.namespace}
+
+				"""
+				
+				// 获取应用状态
+				5.times {
+					sh "sleep 2"; kubectl -n ${env.namespace} get pods |grep ${env.serviceName}
+				}
+			}
+		}
+	}
+
+	stage("CheckHealth") {
+		steps {
+			script {
+				result = sh returnStdout: true; script: """ curl "http://${env.domainName}/health" """
+				if (result == "ok\n") {
+					println("success!")
+				}
+			}
+		}
+	}
 }
-
-
-
-
-
-
