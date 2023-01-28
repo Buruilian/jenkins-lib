@@ -69,16 +69,16 @@ pipeline {
 			}
 		}
 
-		stage("RollOut"){
+		stage("RollOut") {
             input {
                 message "是否进行回滚"
                 ok "提交"
                 submitter "zeyang,aa"
                 parameters {
                     choice(choices: ['yes', 'no'], name: 'opts')
-            }
-
-            steps{
+            	}
+			}
+            steps {
             	script {
             		switch("${opts}") {
             			case "yes":
@@ -90,6 +90,7 @@ pipeline {
             		}
             	}
             }
-        }
+        	
+    	}
 	}
 }
