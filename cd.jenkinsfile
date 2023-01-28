@@ -31,7 +31,7 @@ pipeline {
 					//下载devops4-k8s-deployment中的部署文件
 					env.version = "${env.branchName}-${commitID}"
 					env.deployFile = "${env.version}.yaml"
-					fileData = gitcli.GetRepoFile(projectId, "${appName}%2f${env.version}.yaml", "${env.branchName}")
+					fileData = gitcli.GetRepoFile(projectId, "${appName}%2f${env.version}.yaml", "main")
 					sh "rm -f ${env.deployFile}"
 					writeFile file: "${env.deployFile}", text: fileData
 				}
