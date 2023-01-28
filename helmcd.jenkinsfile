@@ -18,78 +18,65 @@ pipeline {
 	}
 
 	stages {
-		stage("GetDeployFile") {
-			steps {
-				script {
-					projectId = 15
-					appName = "${env.serviceName}"
-
-					//获取devops4-ops-service
-					projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
-					commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
-
-					//下载devops4-k8s-deployment中的部署文件
-					env.version = "${env.branchName}-${commitID}"
-					env.deployFile = "${env.version}.yaml"
-					fileData = gitcli.GetRepoFile(projectId, "${appName}%2f${env.version}.yaml", "main")
-					sh "rm -f ${env.deployFile}"
-					writeFile file: "${env.deployFile}", text: fileData
-				}
-			}
-		}
-
-		stage("K8sDeploy") {
-			steps {
-				script {
-					env.namespace = "${env.buName}"
-					currentBuild.description = "NS: ${env.namespace}"
-
-					sh """
-						## 发布应用
-						kubectl apply -f ${env.deployFile} -n ${env.namespace}
-
-					"""
-					
-					// 获取应用状态
-					5.times {
-						sh "sleep 2; kubectl -n ${env.namespace} get pods |grep ${env.serviceName}"
-					}
-				}
-			}
-		}
-
-		stage("CheckHealth") {
-			steps {
-				script {
-					result = sh returnStdout: true, script: """ curl "http://${env.domainName}/health" """
-					if (result == "ok") {
-						println("success!")
-					}
-				}
-			}
-		}
-
-		stage("RollOut") {
-            input {
-                message "是否进行回滚"
-                ok "提交"
-                submitter "zeyang,aa"
-                parameters {
-                    choice(choices: ['yes', 'no'], name: 'opts')
-            	}
-			}
-            steps {
-            	script {
-            		switch("${opts}") {
-            			case "yes":
-            				sh "kubectl rollout undo deployment/${env.serviceName} -n ${env.namespace}"
-            			break
-            			
-            			case "no":
-            			break
-            		}
-            	}
+		stage("Checkout"){
+            steps{
+                script {            
+                    println("GetCode")
+                    sh "[ -d ${env.serviceName} ] || mkdir ${env.serviceName}"
+                    ws("${WORKSPACE}/${env.serviceName}"){
+                        checkout([$class: 'GitSCM', 
+                                branches: [[name: "${env.branchName}"]], 
+                                extensions: [], 
+                                userRemoteConfigs: [[credentialsId: 'a6679475-5c2c-49f0-8ac9-288ecdf37672', 
+                                                    url: "${env.srcUrl}"]]])
+                        env.commitID = gitcli.GetCommitID()
+                        currentBuild.description = """ branchName: ${env.branchName} \n"""
+                        currentBuild.displayName = "${env.commitID}"
+                    }
+                }
             }
-    	}
+        }
+
+        stage("HelmDeploy"){
+            steps{
+                container("helm"){
+                    script{
+                        env.namespace = "${env.buName}"
+                        env.appName = "${env.serviceName}"
+                        currentBuild.description = "NS: ${env.namespace}"
+                      
+                        //Helm 发布
+                        sh """
+                            helm package "${env.appName}/" 
+                            helm upgrade --install --create-namespace  "${env.appName}" ./"${env.appName}"-*.tgz -n ${env.namespace} 
+                            helm history "${env.appName}"  -n ${env.namespace} 
+                        """ 
+ 
+                        //获取release的历史版本   
+                        env.revision = sh returnStdout: true, script: """helm history ${env.appName} -n ${env.namespace}  | grep -v 'REVISION' | awk '{print \$1}' """
+                        println("${env.revision}")
+                        println("${env.revision.split('\n').toString()}")
+                        env.REVISION = "${env.revision.split('\n').toString()}"
+                        println("${env.REVISION}")
+ 
+                        // 获取应用状态
+                        5.times{
+                            sh "sleep 2; kubectl -n ${env.namespace} get pod  | grep ${env.appName}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("CheckHealth"){
+            steps{
+                script{
+                    result = sh returnStdout: true, script: """ curl "http://${env.domainName}/health" """
+                    if (result == "ok") {
+                        println("success!")
+                    }
+                }
+            }
+        }
 	}
 }
