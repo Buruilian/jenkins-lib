@@ -27,7 +27,7 @@ pipeline {
                         checkout([$class: 'GitSCM', 
                                 branches: [[name: "${env.branchName}"]], 
                                 extensions: [], 
-                                userRemoteConfigs: [[credentialsId: 'a6679475-5c2c-49f0-8ac9-288ecdf37672', 
+                                userRemoteConfigs: [[credentialsId: 'f32d37bd-de73-43e3-b7ca-7fcd707de1f8', 
                                                     url: "${env.srcUrl}"]]])
                         env.commitID = gitcli.GetCommitID()
                         currentBuild.description = """ branchName: ${env.branchName} \n"""
