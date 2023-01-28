@@ -51,7 +51,7 @@ pipeline {
 				
 				// 获取应用状态
 				5.times {
-					sh "sleep 2"; kubectl -n ${env.namespace} get pods |grep ${env.serviceName}
+					sh "sleep 2; kubectl -n ${env.namespace} get pods |grep ${env.serviceName}"
 				}
 			}
 		}
