@@ -62,7 +62,7 @@ pipeline {
 			steps {
 				script {
 					result = sh returnStdout: true, script: """ curl "http://${env.domainName}/health" """
-					if (result == "ok\n") {
+					if (result == "ok") {
 						println("success!")
 					}
 				}
