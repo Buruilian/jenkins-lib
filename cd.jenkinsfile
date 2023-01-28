@@ -61,7 +61,7 @@ pipeline {
 		stage("CheckHealth") {
 			steps {
 				script {
-					result = sh returnStdout: true; script: """ curl "http://${env.domainName}/health" """
+					result = sh returnStdout: true, script: """ curl "http://${env.domainName}/health" """
 					if (result == "ok\n") {
 						println("success!")
 					}
