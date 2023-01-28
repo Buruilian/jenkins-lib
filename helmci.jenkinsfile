@@ -1,0 +1,164 @@
+@Library("mylib@feature-k8s") _
+import org.devops.*
+
+def checkout = new Checkout()
+def build = new Build()
+def unittest = new UnitTest()
+def sonar = new Sonar()
+def gitcli = new Gitlab()
+def artifact = new Artifact()
+
+//env.buildType = "${JOB_NAME}".split("-")[1]
+
+pipeline {
+    agent {
+        label "build"
+    }
+
+    options {
+        skipDefaultCheckout true
+    }
+
+    stages {
+        stage("Checkout") {
+            steps {
+                script {
+                    println("GetCode")
+                    checkout.GetCode("${env.srcUrl}", "${env.branchName}")
+
+                    env.buName = "${JOB_NAME}".split("-")[0]
+                    env.serviceName = "${JOB_NAME}".split("_")[0]
+                    env.commitID = gitcli.GetCommitID()
+
+                    currentBuild.description = """
+                    srcUrl: ${env.srcUrl} \n
+                    branchName: ${env.branchName} \n
+                    """
+                    currentBuild.displayName = "${env.commitId}"
+                }
+            }
+        }
+
+        stage("Build") {
+            steps {
+                script {
+                    println("Build")
+                    build.CodeBuild("${env.buildType}")
+                }
+            }
+        }
+
+        /*stage("Test") {
+            steps {
+                script {
+                    println("Test")
+                    build.CodeTest("${env.buildType}")
+                }
+            }
+        }*/
+
+        stage("CodeScan") {
+            when {
+		        environment name: 'skipSonar', value: 'false'
+	        }     
+            steps {
+                script {
+                    //代码扫描
+                    println("Code Scan")
+                    profileName = "${JOB_NAME}".split("-")[0]
+                    sonar.Init("${env.serviceName}", "java", profileName )
+
+                    //commit-status
+                    groupName = profileName
+                    projectID = gitcli.GetProjectID("${env.serviceName}", groupName)
+                    sonar.CodeScan("${env.branchName}", env.commitID, projectID)   
+                }
+            }
+        }
+
+        stage("PushArtifact"){
+            steps{
+                script{
+                    // Dir /buName/serviceName/version/serviceName-version.xxx
+                    version = "${env.branchName}-${env.commitID}"
+
+                    // 重命名制品
+                    JarName = sh returnStdout: true, script: """ls target|grep -E "jar\$" """
+                    fileName = JarName -"\n"
+                    fileType = fileName.split('\\.')[-1]
+                    env.newFileName = "${serviceName}-${version}.${fileType}"
+                    sh "cd target; mv ${fileName} ${newFileName}"
+
+                    // 上传制品
+                    artifact.PushArtifact("${env.buName}/${env.serviceName}/${version}", "target", "${newFileName}")
+                }
+            }
+        }
+
+        stage("DockerBuild"){
+            steps {
+                script{
+                	env.registry = "172.31.0.11"
+                	env.version = "${env.branchName}-${env.commitID}"
+                    env.imageName = "${env.registry}/${env.buName}/${env.serviceName}:${env.version}"
+
+                    withCredentials([usernamePassword(credentialsId: '0afc6b42-b63f-4fb5-8b43-ad9ad77e9ec6', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
+	    				sh """
+	                        # 登录镜像仓库
+	                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${env.registry}
+
+	                        # 构建镜像
+	                        docker build -t ${env.imageName} . --build-arg pkgname=target/${env.newFileName}
+
+	                        # 上传镜像
+	                        docker push ${env.imageName}
+
+	                        # 删除镜像
+	                        sleep 2
+	                        docker rmi ${env.imageName}
+	                    """
+					}
+                }                    
+           }    
+        }
+
+        stage("ReleaseFile") {
+			steps {
+				script {
+					// 下载模板文件
+					projectId = "15"
+					fileData = gitcli.GetRepoFile(projectId, "deployments.yaml", "main")
+					// println(fileData)
+
+					sh "rm -f deployments.yaml"
+					writeFile file: 'deployments.yaml', text: fileData
+
+					// 替换模板文件内容
+					namespace = "${env.buName}"
+					appName = "${env.serviceName}"
+					sh """
+						sed -i 's#__DOMAIN_NAME__#${env.domainName}#g' deployments.yaml
+						sed -i 's#__SERVICE_PORT__#${env.port}#g' deployments.yaml
+						sed -i 's#__APP_NAME__#${appName}#g' deployments.yaml
+						sed -i 's#__NAMESPACE__#${namespace}#g' deployments.yaml
+						sed -i 's#__IMAGE_NAME__#${env.imageName}#g' deployments.yaml
+						#cat deployments.yaml
+					"""
+
+                    //上传替换后的版本文件（新建文件或者更新文件）
+                    newYaml = sh returnStdout: true, script: 'cat deployments.yaml'
+                    //println(newYaml)
+                   
+                    //更新gitlab文件内容
+                    base64Content = newYaml.bytes.encodeBase64().toString()
+ 
+                    try {
+                        gitcli.CreateRepoFile(projectId, "${appName}%2f${env.version}.yaml", base64Content, "main")
+                    } catch(e) {
+                        gitcli.UpdateRepoFile(projectId, "${appName}%2f${env.version}.yaml", base64Content, "main")
+                    }
+				}
+			}
+		}
+    }
+}
