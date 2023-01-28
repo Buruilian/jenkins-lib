@@ -77,7 +77,7 @@ pipeline {
             }
         }
 
-        stage("RollOut"){
+        stage("RollOut") {
             input {
                 message "是否进行回滚"
                 ok "提交"
@@ -88,21 +88,18 @@ pipeline {
             }
  
             steps{
- 
-                container("helm"){
-                    script{
-                        switch("${opts}") {
-                            case "yes":
-                                def result = input  message: "选择回滚版本?", 
+                script{
+                    switch("${opts}") {
+                        case "yes":
+                            def result = input  message: "选择回滚版本?", 
                                 parameters: [choice(choices: env.REVISION, name: 'rversion')]
  
-                                println("${result}")
+                            	println("${result}")
                                 sh "helm rollback ${env.appName} ${result} -n ${env.namespace} "
                                 break
  
-                            case "no":
-                            break
-                        }
+                        case "no":
+                        break
                     }
                 }
             }
