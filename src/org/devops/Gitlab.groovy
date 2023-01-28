@@ -82,7 +82,7 @@ def HttpReq(method, apiUrl) {
 
 
 def GetBranchCommitID(projectID, branchName){
-    apiUrl = "projects/${projectID}/repository/branches/${branchName}"
+    apiUrl = "/projects/${projectID}/repository/branches/${branchName}"
     response = HttpReq("GET", apiUrl)
     response = readJSON text: response - "\n"
     return response.commit.short_id
