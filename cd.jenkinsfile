@@ -1,4 +1,4 @@
-@Library("mylib"@feature-k8s) _   //加载共享库
+@Library("mylib@feature-k8s") _
 import org.devops.*               // 导入库
 
 def gitcli = new Gitlab()
