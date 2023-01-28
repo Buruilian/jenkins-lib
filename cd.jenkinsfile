@@ -68,5 +68,28 @@ pipeline {
 				}
 			}
 		}
+
+		stage("RollOut"){
+            input {
+                message "是否进行回滚"
+                ok "提交"
+                submitter "zeyang,aa"
+                parameters {
+                    choice(choices: ['yes', 'no'], name: 'opts')
+            }
+
+            steps{
+            	script {
+            		switch("${opts}") {
+            			case "yes":
+            				sh "kubectl rollout undo deployment/${env.serviceName}" -n ${env.namespace}
+            			break
+            			
+            			case "no":
+            			break
+            		}
+            	}
+            }
+        }
 	}
 }
