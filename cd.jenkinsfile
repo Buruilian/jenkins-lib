@@ -19,50 +19,52 @@ pipeline {
 
 	stages {
 		stage("GetDeployFile") {
-			script {
-				projectId = 15
-				appName = "${env.serviceName}"
+			steps {
+				script {
+					projectId = 15
+					appName = "${env.serviceName}"
 
-				//获取devops4-ops-service
-				projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
-				commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
+					//获取devops4-ops-service
+					projectID = gitcli.GetProjectID("${env.serviceName}", "${env.buName}")
+					commitID = gitcli.GetBranchCommitID(projectID, "${env.branchName}")
 
-				//下载devops4-k8s-deployment中的部署文件
-				env.version = "${env.branchName}-${commitID}"
-				env.deployFile = "${env.version}.yaml"
-				fileData = gitcli.GetRepoFile(projectId, "${appName}%2f${env.version}.yaml")
-				sh "rm -f ${env.deployFile}"
-				writeFile file: "${env.deployFile}", text: fileData
-			}
-		}
-	}
-
-	stage("K8sDeploy") {
-		steps {
-			script {
-				env.namespace = "${env.buName}"
-				currentBuild.description = "NS: ${env.namespace}"
-
-				sh """
-					## 发布应用
-					kubectl apply -f ${env.deployFile} -n ${env.namespace}
-
-				"""
-				
-				// 获取应用状态
-				5.times {
-					sh "sleep 2; kubectl -n ${env.namespace} get pods |grep ${env.serviceName}"
+					//下载devops4-k8s-deployment中的部署文件
+					env.version = "${env.branchName}-${commitID}"
+					env.deployFile = "${env.version}.yaml"
+					fileData = gitcli.GetRepoFile(projectId, "${appName}%2f${env.version}.yaml")
+					sh "rm -f ${env.deployFile}"
+					writeFile file: "${env.deployFile}", text: fileData
 				}
 			}
 		}
-	}
 
-	stage("CheckHealth") {
-		steps {
-			script {
-				result = sh returnStdout: true; script: """ curl "http://${env.domainName}/health" """
-				if (result == "ok\n") {
-					println("success!")
+		stage("K8sDeploy") {
+			steps {
+				script {
+					env.namespace = "${env.buName}"
+					currentBuild.description = "NS: ${env.namespace}"
+
+					sh """
+						## 发布应用
+						kubectl apply -f ${env.deployFile} -n ${env.namespace}
+
+					"""
+					
+					// 获取应用状态
+					5.times {
+						sh "sleep 2; kubectl -n ${env.namespace} get pods |grep ${env.serviceName}"
+					}
+				}
+			}
+		}
+
+		stage("CheckHealth") {
+			steps {
+				script {
+					result = sh returnStdout: true; script: """ curl "http://${env.domainName}/health" """
+					if (result == "ok\n") {
+						println("success!")
+					}
 				}
 			}
 		}
