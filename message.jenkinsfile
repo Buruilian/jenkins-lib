@@ -1,0 +1,28 @@
+@Library("mylib@main") _
+import org.devops.*
+
+def msg = new Message()
+
+pipeline {
+ 
+    agent{
+        label "master"
+    }
+ 
+    stages{
+        stage("Message"){
+            steps{
+                script {
+                    wrap([$class: 'BuildUser']){
+                            echo "full name is $BUILD_USER"
+                            echo "user id is $BUILD_USER_ID"
+                            echo "user email is $BUILD_USER_EMAIL"
+                            env.BUILD_USER = "${BUILD_USER}"
+                    }
+                    msg.DingDing()
+                    msg.WeiXin()
+                }
+            }
+        }
+    }
+}
