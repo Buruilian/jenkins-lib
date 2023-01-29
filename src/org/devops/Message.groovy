@@ -16,6 +16,7 @@ def WeiXin(){
         """
     }
 }
+
 // 钉钉通知
 def DingDing(){
     withCredentials([string(credentialsId: '1fbae655-b543-4667-aa63-f48451e384b8', variable: 'ACCESS_TOKEN')]) {
